@@ -22,6 +22,7 @@ from game import Directions
 from typing import List
 from util import PriorityQueue, Stack, Queue
 
+
 class SearchProblem:
     """
     This class outlines the structure of a search problem, but doesn't implement
@@ -173,10 +174,27 @@ def nullHeuristic(state, problem=None) -> float:
     """
     return 0
 
-def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directions]:
-    """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+def aStarSearch(problem, heuristic=lambda state, problem: 0):
+    pq = PriorityQueue()
+    pq.push((problem.getStartState(), []), 0)
+    visited = {}
+
+    while not pq.isEmpty():
+        state, path = pq.pop()
+
+        if state in visited and visited[state] <= problem.getCostOfActions(path):
+            continue
+        visited[state] = problem.getCostOfActions(path)
+
+        if problem.isGoalState(state):
+            return path
+
+        for successor, action, cost in problem.getSuccessors(state):
+            new_path = path + [action]
+            priority = problem.getCostOfActions(new_path) + heuristic(successor, problem)
+            pq.push((successor, new_path), priority)
+    return []
+
 
 # Abbreviations
 bfs = breadthFirstSearch
