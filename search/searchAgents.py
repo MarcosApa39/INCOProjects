@@ -279,7 +279,7 @@ class CornersProblem(search.SearchProblem):
 
     def __init__(self, startingGameState: pacman.GameState):
         """
-        Initializes the problem by storing walls, Pacman's starting position, and the corners.
+        Stores the walls, pacman's starting position and corners.
         """
         self.walls = startingGameState.getWalls()  # Stores the walls of the maze
         self.startingPosition = startingGameState.getPacmanPosition()  # Stores Pacman's starting position
@@ -297,13 +297,14 @@ class CornersProblem(search.SearchProblem):
 
     def getStartState(self):
         """
-        Returns the initial state: Pacman's starting position and an empty set of visited corners.
+        Returns the start state (in your state space, not the full Pacman state
+        space)
         """
         return (self.startingPosition, tuple())  # State consists of (position, visited_corners)
 
     def isGoalState(self, state: Any):
         """
-        Returns True if all four corners have been visited.
+        Returns whether this search state is a goal state of the problem.
         """
         return len(state[1]) == 4  # Goal is achieved when all four corners are in the visited list
 
@@ -311,10 +312,11 @@ class CornersProblem(search.SearchProblem):
         """
         Returns successor states, the actions they require, and a cost of 1.
 
-        Each successor consists of:
-        - The new state ((new_x, new_y), updated_corners)
-        - The action taken (NORTH, SOUTH, EAST, WEST)
-        - The step cost (always 1 in this problem)
+         As noted in search.py:
+            For a given state, this should return a list of triples, (successor,
+            action, stepCost), where 'successor' is a successor to the current
+            state, 'action' is the action required to get there, and 'stepCost'
+            is the incremental cost of expanding to that successor
         """
         successors = []
         x, y = state[0]  # Extract Pacman current position
@@ -340,29 +342,17 @@ class CornersProblem(search.SearchProblem):
     
     def getCostOfActions(self, actions):
         """
-        Returns the cost of a particular sequence of actions.
-        If those actions include an illegal move (hitting a wall), return 999999.
-        This ensures that illegal moves have an extremely high penalty, making them
-        undesirable in the search algorithms.
+        Returns the cost of a particular sequence of actions.  If those actions
+        include an illegal move, return 999999.  This is implemented for you.
         """
 
-        # If the action sequence is None (no actions given), returns a very high cost
-        if actions is None:
-            return 999999
-
-        # Start from Pacman initial position
-        x, y = self.startingPosition
-        cost = 0  # Initialize cost to 0.
-
-        # Iterate through the sequence of actions
+        if actions == None: return 999999
+        x,y= self.startingPosition
         for action in actions:
-            dx, dy = Actions.directionToVector(action)  # Convert action into the movement vector
-            x, y = int(x + dx), int(y + dy)  # Compute new position after applying movement
-            # If the new position is a wall, return a very high cost to indicate an invalid pth.
-            if self.walls[x][y]:
-                return 999999
-            cost += 1  # Each move has a cost of 1
-        return cost  # Return the total cost of the sequence of actions
+            dx, dy = Actions.directionToVector(action)
+            x, y = int(x + dx), int(y + dy)
+            if self.walls[x][y]: return 999999
+        return len(actions)
 
 
 
@@ -447,27 +437,18 @@ class FoodSearchProblem:
         self.start = (startingGameState.getPacmanPosition(), startingGameState.getFood())  # Initial state
         self.walls = startingGameState.getWalls()  # Walls grid representation
         self.startingGameState = startingGameState  # Store the full initial game state
-        self._expanded = 0  # Tracks the number of expanded nodes (used for debugging/performance analysis)
-        self.heuristicInfo = {}  # Dictionary to store reusable information for heuristics
+        self._expanded = 0  # DO NOT CHANGE: Tracks the number of expanded nodes (used for debugging/performance analysis)
+        self.heuristicInfo = {}  # A dictionary for the heuristic to store information
 
     def getStartState(self):
         """
-        Returns the initial state of the search problem.
-        This consists of:
-        - Pacman's starting position.
-        - The initial food grid (indicating which locations contain food).
+        Returns the initial state of the search problem (Pacmaan starting position and the initial food grid).
         """
         return self.start
 
     def isGoalState(self, state):
         """
-        Determines whether the current state is a goal state.
-        
-        Args:
-        - state: A tuple (pacmanPosition, foodGrid).
-        
-        Returns:
-        - True if all food has been eaten (i.e., no True values left in foodGrid).
+        Determines if the current state is a goal state.
         """
         return state[1].count() == 0  # If no food remains, the goal has been reached.
 
@@ -479,13 +460,13 @@ class FoodSearchProblem:
         - state: The current search state, represented as (pacmanPosition, foodGrid).
 
         Returns:
-        - A list of tuples: (successorState, action, stepCost), where:
+        - A list of tuples::
           - successorState is the new state after moving.
           - action is the direction taken (North, South, East, West).
           - stepCost is always 1 (each move has equal cost).
         """
         successors = []
-        self._expanded += 1  # Keep track of how many states have been expanded
+        self._expanded += 1  # DO NOT CHANGE: Keep track of how many states have been expanded
 
         for direction in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             x, y = state[0]  # Extract Pacman's current position
@@ -502,16 +483,8 @@ class FoodSearchProblem:
         return successors
 
     def getCostOfActions(self, actions):
-        """
-        Returns the cost of a given sequence of actions.
-        If an action leads into a wall, returns a large cost (999999) to penalize invalid paths.
-
-        Args:
-        - actions: A list of Pacman's movement actions.
-
-        Returns:
-        - The total cost of executing the given actions.
-        """
+        """Returns the cost of a particular sequence of actions.  If those actions
+        include an illegal move, return 999999"""
         if actions is None:
             return 999999  # If no actions are given, return an invalid high cost.
 
@@ -519,6 +492,7 @@ class FoodSearchProblem:
         cost = 0  # Initialize cost counter
 
         for action in actions:
+            # figure out the next state and see whether it's legal
             dx, dy = Actions.directionToVector(action)  # Convert action into movement vector
             x, y = int(x + dx), int(y + dy)  # Compute the next position
 
@@ -546,8 +520,8 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
 
     Args:
     - state: A tuple (pacmanPosition, foodGrid), where:
-        - pacmanPosition: The current position of Pacman as (x, y).
-        - foodGrid: A grid of booleans indicating remaining food positions.
+     - pacmanPosition: The current position of Pacman as (x, y).
+     - foodGrid: A grid of booleans indicating remaining food positions.
     - problem: The FoodSearchProblem instance.
     Returns:
     - An integer representing the heuristic cost estimate.
@@ -566,20 +540,11 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
 
 
 class ClosestDotSearchAgent(SearchAgent):
-    """ 
-    An agent that searches for all food by repeatedly finding the path 
-    to the closest dot using a sequence of searches.
-    """
+    """Search for all food using a sequence of searches"""
 
     def registerInitialState(self, state):
         """
         This function initializes the search process when the game starts.
-        
-        It continuously searches for the closest food dot and follows the path 
-        until all food has been collected.
-        
-        Args:
-        - state: The initial GameState (contains Pacman's position, walls, food, etc.).
         """
         self.actions = []  # Stores the sequence of actions that Pacman will follow
         currentState = state  # Keeps track of the current game state
@@ -604,14 +569,9 @@ class ClosestDotSearchAgent(SearchAgent):
     def findPathToClosestDot(self, gameState: pacman.GameState):
         """
         Finds the shortest path to the closest food dot from the current state.
-
-        Uses BFS (Breadth-First Search) to find the shortest path.
-
-        Args:
-        - gameState: The current GameState.
-
-        Returns:
-        - A list of actions leading Pacman to the nearest food.
+        Uses BFS to find the shortest path.
+        Args: gameState: The current GameState.
+        Returns q list of actions leading Pacman to the nearest food.
         """
         problem = AnyFoodSearchProblem(gameState)  # Create a search problem for finding the closest food
         return search.bfs(problem)  # Use BFS to find the optimal path to the closest food dot
@@ -619,18 +579,22 @@ class ClosestDotSearchAgent(SearchAgent):
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
-    A specialized search problem for finding a path to any food dot.
+    A search problem for finding a path to any food.
 
-    This problem inherits from PositionSearchProblem but modifies the goal state 
-    to stop when Pacman reaches the closest food.
+    This search problem is just like the PositionSearchProblem, but has a
+    different goal test, which you need to fill in below.  The state space and
+    successor function do not need to be changed.
+
+    The class definition above, AnyFoodSearchProblem(PositionSearchProblem),
+    inherits the methods of the PositionSearchProblem.
+
+    You can use this search problem to help you fill in the findPathToClosestDot
+    method.
     """
 
     def __init__(self, gameState):
         """
-        Initializes the problem based on the given game state.
-
-        Args:
-        - gameState: The current game state.
+        Initializes the problem based on the given game state (the current).
         """
         self.food = gameState.getFood()  # Store the food grid
         self.walls = gameState.getWalls()  # Store the wall layout
@@ -640,32 +604,20 @@ class AnyFoodSearchProblem(PositionSearchProblem):
 
     def isGoalState(self, state: Tuple[int, int]):
         """
-        Determines whether the given state is a goal state.
-
-        The goal is reached when Pacman reaches any tile that contains food.
-
-        Args:
-        - state: A tuple (x, y) representing Pacman's current position.
-
-        Returns:
-        - True if the state contains food, otherwise False.
+        Determines if the given state is a goal state.
         """
         return self.food[state[0]][state[1]]  # Check if there is food at this position
 
 
 def mazeDistance(point1: Tuple[int, int], point2: Tuple[int, int], gameState: pacman.GameState) -> int:
     """
-    Computes the shortest path distance between two points in the maze.
+    Returns the maze distance between any two points, using the search functions
+    you have already built. The gameState can be any game state -- Pacman's
+    position in that state is ignored.
 
-    This function uses BFS to find the shortest path between two points while avoiding walls.
+    Example usage: mazeDistance( (2,4), (5,6), gameState)
 
-    Args:
-    - point1: The starting point (x1, y1).
-    - point2: The destination point (x2, y2).
-    - gameState: The GameState object (walls and layout of the maze).
-
-    Returns:
-    - The number of steps in the shortest path from point1 to point2.
+    This might be a useful helper function for your ApproximateSearchAgent.
     """
     x1, y1 = point1
     x2, y2 = point2
