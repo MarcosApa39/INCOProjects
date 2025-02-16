@@ -175,25 +175,31 @@ def nullHeuristic(state, problem=None) -> float:
     return 0
 
 def aStarSearch(problem, heuristic=lambda state, problem: 0):
-    pq = PriorityQueue()
-    pq.push((problem.getStartState(), []), 0)
-    visited = {}
+    pq = PriorityQueue()  # Initialize a priority queue (min-heap) to store states along with their priority (total cost)
+    pq.push((problem.getStartState(), []), 0)  # Push the start state into the priority queue with an initial cost of 0
+    visited = {}  # Dictionary to keep track of the best cost found for each visited state
 
+    # Continue exploring while there are states in the priority queue
     while not pq.isEmpty():
+        # Pop the state with the lowest priority (cost + heuristic) from the priority queue
         state, path = pq.pop()
-
+        # If the state has been visited with an equal or lower cost before, skip it
         if state in visited and visited[state] <= problem.getCostOfActions(path):
             continue
+        # Mark the state as visited with its total cost
         visited[state] = problem.getCostOfActions(path)
-
+        # If this state is the goal state, return the path leading to it
         if problem.isGoalState(state):
             return path
-
+        # Expand the state by exploring its successors
         for successor, action, cost in problem.getSuccessors(state):
-            new_path = path + [action]
-            priority = problem.getCostOfActions(new_path) + heuristic(successor, problem)
-            pq.push((successor, new_path), priority)
+            new_path = path + [action]  # Create a new path by appending the new action to the existing path
+            priority = problem.getCostOfActions(new_path) + heuristic(successor, problem) # Compute the priority: cost of new path + heuristic estimate to goal
+            pq.push((successor, new_path), priority)  # Push the successor state into the priority queue with its priority
+
+    # If no solution is found, return an empty list (no valid path)
     return []
+
 
 
 # Abbreviations
