@@ -465,14 +465,13 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     return max_distance
 
 
-
 class ClosestDotSearchAgent(SearchAgent):
-    "Search for all food using a sequence of searches"
+    """Search for all food using a sequence of searches"""
     def registerInitialState(self, state):
         self.actions = []
         currentState = state
-        while(currentState.getFood().count() > 0):
-            nextPathSegment = self.findPathToClosestDot(currentState) # The missing piece
+        while currentState.getFood().count() > 0:
+            nextPathSegment = self.findPathToClosestDot(currentState) 
             self.actions += nextPathSegment
             for action in nextPathSegment:
                 legal = currentState.getLegalActions()
@@ -488,60 +487,32 @@ class ClosestDotSearchAgent(SearchAgent):
         Returns a path (a list of actions) to the closest dot, starting from
         gameState.
         """
-        # Here are some useful elements of the startState
-        startPosition = gameState.getPacmanPosition()
-        food = gameState.getFood()
-        walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
-
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return search.bfs(problem)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
     A search problem for finding a path to any food.
-
-    This search problem is just like the PositionSearchProblem, but has a
-    different goal test, which you need to fill in below.  The state space and
-    successor function do not need to be changed.
-
-    The class definition above, AnyFoodSearchProblem(PositionSearchProblem),
-    inherits the methods of the PositionSearchProblem.
-
-    You can use this search problem to help you fill in the findPathToClosestDot
-    method.
     """
 
     def __init__(self, gameState):
-        "Stores information from the gameState.  You don't need to change this."
-        # Store the food for later reference
+        """Stores information from the gameState. You don't need to change this."""
         self.food = gameState.getFood()
-
-        # Store info for the PositionSearchProblem (no need to change this)
         self.walls = gameState.getWalls()
         self.startState = gameState.getPacmanPosition()
         self.costFn = lambda x: 1
-        self._visited, self._visitedlist, self._expanded = {}, [], 0 # DO NOT CHANGE
+        self._visited, self._visitedlist, self._expanded = {}, [], 0 
 
     def isGoalState(self, state: Tuple[int, int]):
-        """
-        The state is Pacman's position. Fill this in with a goal test that will
-        complete the problem definition.
-        """
-        x,y = state
-
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        """The state is Pacman's position. Fill this in with a goal test that will
+        complete the problem definition."""
+        return self.food[state[0]][state[1]]
 
 def mazeDistance(point1: Tuple[int, int], point2: Tuple[int, int], gameState: pacman.GameState) -> int:
     """
     Returns the maze distance between any two points, using the search functions
     you have already built. The gameState can be any game state -- Pacman's
     position in that state is ignored.
-
-    Example usage: mazeDistance( (2,4), (5,6), gameState)
-
-    This might be a useful helper function for your ApproximateSearchAgent.
     """
     x1, y1 = point1
     x2, y2 = point2
